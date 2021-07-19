@@ -14,7 +14,6 @@ jira_results = jira.search_issues('project = ' + config.get('jira', 'project') +
 try:
     for jira_issue in jira_results:
         logger.info('Processing Ticket (' + jira_issue.key + ')')
-        syslog.syslog(syslog.LOG_INFO, 'Processing Ticket (' + jira_issue.key + ')')
 
         # Next, obtain all current comments on the JIRA ticket. 
         jira_comments = jira.comments(jira_issue)
@@ -34,7 +33,6 @@ try:
 
             elif (not rt2jira_regex.search(existing_comment.body)) and action_match and (len(action_match.groups()) >= 1) and ('Correspondence added' in action_match.group(1) or 'Status changed' in action_match.group(1) or 'Taken by' in action_match.group(1) or (jira_issue.fields.customfield_16300 != ticket_id and 'Ticket created by' in action_match.group(1))):
                 logger.info('Ticket (' + jira_issue.key + ') was acted upon')
-                syslog.syslog(syslog.LOG_INFO, 'Ticket (' + jira_issue.key + ') was acted upon')
                 ticket_acted_upon = True
                 break
 
@@ -45,12 +43,9 @@ try:
 
 except JIRAError as e:
     logger.error('JIRA processing error occurred.')
-    syslog.syslog(syslog.LOG_ERR, 'JIRA processing error occurred.')
     logger.error(e)
-    syslog.syslog(syslog.LOG_ERR, e)
     sys.exit(1)
 except:
     logger.error('Unknown processing error occurred.')
-    syslog.syslog(syslog.LOG_ERR, 'Unknown processing error occurred.')
     sys.exit(1)
 
