@@ -189,6 +189,7 @@ def find_user(rt_username, algo_type, project_keys):
     :param algo_type: the algorithm type specified (0 or 1)
     :param project_keys: comma-separated list of project keys to check for issue assignment permissions
     """
+    rt_username = rt_username.lower()
     users_dict = config_get_dict(config, 'jira', 'find_user_mapping')
     users = None
     if algo_type == 1:
@@ -207,7 +208,10 @@ def find_user(rt_username, algo_type, project_keys):
 
     ret_user = None
     for user in users:
-        match = regex.search(user.name)
+        if user.name is not None:
+            match = regex.search(user.name)
+        else:
+            match = regex.search(user.displayName)
         if match:
             ret_user = user
             break
@@ -267,7 +271,8 @@ except:
 # Destination JIRA Service
 jira = None
 try:
-    jira = JIRA(config.get('jira', 'api_url_prefix'), options={'verify': config.getboolean('jira', 'verify')}, basic_auth=(config.get('jira', 'username'), config.get('jira', 'password')))
+    jira = JIRA(options={'server': config.get('jira', 'api_url_prefix'), 'verify': config.getboolean('jira', 'verify')},
+                basic_auth=(config.get('jira', 'username'), config.get('jira', 'password')))
 except JIRAError as e:
     logger.error("Unable to connect to JIRA server.")
     logger.error(e.response.parsed)
